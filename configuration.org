@@ -1,0 +1,420 @@
+
+ - Default Emacs Configuration -
+
+* Setup-Org-Mode-Emacs-Configration
+
+Put the following block at the start of your
+                        "~/.emacs.d/init.el"
+----------------------------------------------------
+(require 'org)
+(org-babel-load-file
+ (expand-file-name "configuration.org"
+                    user-emacs-directory))
+----------------------------------------------------
+And restart emacs.
+Then M-x 'package-refresh-contents' and 'package-install' use-package.
+
+* Emacs-Package-Repos
+  #+BEGIN_SRC emacs-lisp
+  ;Package Repository Lists...
+  (require 'package)
+
+;;  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+  (add-to-list 'package-archives
+          '("melpa" . "https://melpa.org/packages/"))
+  (when (< emacs-major-version 24)
+  (add-to-list 'package-archives
+        '("gnu" . "http://elpa.gnu.org/packages/")))
+  (package-initialize)
+  
+  #+END_SRC
+
+* Native-Configuration
+** yes-or-no
+   #+BEGIN_SRC emacs-lisp
+     (fset 'yes-or-no-p 'y-or-n-p)
+   #+END_SRC
+** show-paren-mode
+   #+BEGIN_SRC emacs-lisp
+     (show-paren-mode 1)
+   #+END_SRC
+
+** font-size
+   #+BEGIN_SRC emacs-lisp
+     (set-face-attribute 'default nil :height 80)
+   #+END_SRC
+   
+** theme
+*** package
+    #+BEGIN_SRC emacs-lisp
+      (use-package xresources-theme
+	:ensure t)
+      (use-package modus-themes
+	:ensure t)
+    #+END_SRC
+    
+*** load-theme
+   #+BEGIN_SRC emacs-lisp
+     ;(load-theme 'xresources t)
+     (load-theme 'modus-vivendi t)
+   #+END_SRC
+
+** menu/tool-bar-mode
+   #+BEGIN_SRC emacs-lisp
+     (menu-bar-mode -1)
+     (tool-bar-mode -1)
+     (toggle-scroll-bar 0)
+   #+END_SRC
+
+** daemon
+   #+BEGIN_SRC emacs-lisp
+     (if (daemonp)
+	 (load-file "/home/dev/.emacs.d/init.el"))
+     (if(daemonp)
+	 (menu-bar-mode -1))
+     (if(daemonp)
+	 (tool-bar-mode -1))
+   #+END_SRC
+
+** face-attributes
+   #+BEGIN_SRC emacs-lisp
+   (set-face-attribute 'region nil :background "#666")
+   #+END_SRC
+
+
+
+* Avy
+** description
+   avy is a GNU Emacs package for jumping to visible text using a
+   char-based decision tree. See also ace-jump-mode and
+   vim-easymotion - avy uses the same idea.
+
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package avy
+       :ensure t
+       :bind ("C-'" . avy-goto-char)
+       )
+   #+END_SRC
+
+* Company
+** Description
+   Company is a text completion framework for Emacs. The name stands
+   for "complete anything". It uses pluggable back-ends and front-ends
+   to retrieve and display completion candidates.  It comes with
+   several back-ends such as Elisp, Clang, Semantic, Eclim, Ropemacs,
+   Ispell, CMake, BBDB, Yasnippet, dabbrev, etags, gtags, files,
+   keywords and a few others.
+
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package company
+       :ensure t
+       :init (add-hook 'after-init-hook 'global-company-mode))
+
+     (setq company-idle-delay 0)
+     (setq company-minimum-prefix-length 3)
+     (setq company-selection-wrap-around t)
+     ;;(company-tng-configure-default)
+
+     (use-package company-org-block
+       :ensure t
+       :custom
+       (company-org-block-edit-style 'prompt)
+       :hook ((org-mode . (lambda ()
+			    (setq-local company-backends '(company-org-block))))))
+
+#+END_SRC
+   <
+* Dashboard
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package dashboard
+       :ensure t
+       :config
+       (dashboard-setup-startup-hook)
+       (setq dashboard-banner-logo-title "This is not Vim")
+       (setq dashboard-startup-banner 'logo)
+       (setq dashboard-set-heading-icons t)
+       (setq dashboard-set-file-icons t)
+       (setq dashboard-items '((recents  . 5)
+			     (bookmarks . 20)
+			     ))
+       )
+     (use-package all-the-icons
+       :ensure t)
+   #+END_SRC
+
+* Elpy
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package elpy
+       :ensure t
+       :config
+       (setq elpy-rpc-python-command "/usr/bin/python3.8")
+       (setq elpy-rpc-virtualenv-path 'current)
+       :init
+       (elpy-enable)
+       (setq elpy-rpc-backend "jedi")
+       )
+   #+END_SRC
+
+* Helm
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package helm
+       :ensure t
+       :bind
+       ("M-x" . helm-M-x)
+       ("C-x C-f" . helm-find-files)
+       ("C-x b" . helm-bookmarks)
+       ("C-x C-b" . helm-buffers-list))
+   #+END_SRC
+** Helm-Swoop
+   #+BEGIN_SRC emacs-lisp
+     (use-package helm-swoop
+       :ensure t
+       :bind ("C-s" . helm-swoop))
+   #+END_SRC
+
+* Flycheck
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package flycheck
+       :ensure t
+       )
+     (add-hook 'js2-mode-hook (lambda () (flymake-mode t)))
+   #+END_SRC
+
+* Javascript
+** js
+   #+BEGIN_SRC emacs-lisp
+     ;; (use-package ac-js2
+     ;;   :ensure t
+     ;;   )
+     ;; (use-package js2-mode
+     ;;   :ensure t
+     ;;   )
+     ;; ;;js2 config 
+     ;; (add-to-list 'auto-mode-alist '("\\.json$" . js-mode))
+     ;; (add-hook 'js2-mode-hook 'js2-minor-mode)
+     ;; (add-hook 'js2-mode-hook 'ac-js2-mode)
+     ;; (setq js2-highlight-level 3)
+
+     ;; ;;auto-complete
+     ;; (require 'auto-complete-config)
+     ;; (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+     ;; (ac-config-default)
+     ;; (ac-set-trigger-key "TAB")
+     ;; (ac-set-trigger-key "<tab>")
+
+   #+END_SRC
+
+* Jedi
+** package
+   #+BEGIN_SRC emacs-lisp
+   (use-package jedi
+     :ensure t
+     :config 
+     (setq python-environment-directory "~/.emacs.d/.python-environments")
+     :init
+     ;;(add-hook 'python-mode-hook 'jedi:setup)
+     (setq jedi:complete-on-dot t))
+   #+END_SRC
+
+* Ledger
+** package
+   #+BEGIN_SRC emacs-lisp
+   (use-package ledger-mode
+   :ensure t)
+   
+   #+END_SRC
+   
+* Org
+** package
+  #+BEGIN_SRC emacs-lisp
+    (use-package org-bullets
+      :ensure t
+      :config (require 'org-bullets)
+      :init
+      (add-hook 'org-mode-hook 'org-bullets-mode)
+      )
+
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((lisp . t)))
+
+    (add-to-list 'org-structure-template-alist '("lisp" "#+BEGIN_SRC lisp\n\n#+END_SRC"))
+  #+END_SRC
+  
+* Paredit
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package paredit
+       :ensure t)
+
+     (defun my-paredit-nonlisp ()
+       "Turn on paredit mode for non-lisps"
+       (interactive)
+       (set (make-local-variable 'paredit-space-for-delimeter-predicates)
+	    '((lambda (endp delimiter) null)))
+       (paredit-mode ))
+
+     ;;(add-hook 'js-mode-hook 'my-paredit-nonlisp) ;use with the above function
+     ;;(add-hook 'js-mode-hook 'esk-paredit-nonlisp) ;for emacs starter kit
+
+     ;; (define-key js-mode-map "{" 'paredit-open-curly)
+     ;; (define-key js-mode-map "}" 'paredit-close-curly-and-newline)
+   #+END_SRC
+
+* Projectile
+** description
+   Projectile is a project interaction library for Emacs. Its goal is
+   to provide a nice set of features operating on a project level
+   without introducing external dependencies. For instance - finding
+   project files is done in pure Emacs Lisp without the use of GNU
+   find.
+
+   Projectile also tries to be practical - if some external tools
+   could speed up some task substantially and the tools are available,
+   Projectile will leverage them.
+
+   This library provides easy project management and navigation. The
+   concept of a project is pretty basic - just a folder containing
+   special file. Currently git, mercurial and bazaar repos are
+   considered projects by default. If you want to mark a folder
+   manually as a project just create an empty .projectile file in it.
+   
+   Some of projectile’s features:
+
+    jump to a file in project
+    jump to a project buffer
+    kill all project buffers
+    replace in project
+    multi-occur in project buffers
+    grep in project
+    regenerate project etags
+    visit project in dired
+    run make in a project with a single key chord
+
+** depends-on
+   it’s recommended to install the following command-line tools:
+
+    fd (a super-fast alternative to find)
+
+    ag (a.k.a. the_silver_searcher,
+    a powerful alternative to grep) or rg (a.k.a. ripgrep)
+
+    Projectile will make use of them automatically when available,
+    and fallback to the standard Unix tools otherwise.
+
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package projectile
+       :ensure t
+       :init
+       (projectile-mode +1)
+       :bind (:map projectile-mode-map
+		   ;("s-p" . projectile-command-map) ;; Super??
+		   ("C-c p" . helm-projectile)))
+
+     (use-package helm-projectile
+       :ensure t)
+     (helm-projectile-on)
+     (setq projectile-project-search-path '("~/developement"))
+   #+END_SRC
+
+* Rainbow
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package rainbow-mode
+       :ensure t
+       )
+     ;GLOBALIZE rainbow-mode
+     (define-globalized-minor-mode my-global-rainbow-mode rainbow-mode
+       (lambda () (rainbow-mode 1)))
+
+     (my-global-rainbow-mode 1)
+   #+END_SRC
+
+* TRAMP
+** package
+  #+BEGIN_SRC emacs-lisp
+    (setq tramp-default-method "ssh")
+    (setq tramp-terminal-type "dumb")
+  #+END_SRC
+
+* Which-Key
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package which-key
+       :ensure t
+       :init (which-key-mode)
+       )
+   #+END_SRC
+
+* Yasnippet
+** package
+  #+BEGIN_SRC emacs-lisp
+    (use-package yasnippet
+      :ensure t)
+    (use-package yasnippet-snippets
+      :ensure t
+      :config (yas-global-mode)
+      )
+  #+END_SRC
+  
+* lsp-mode
+** description
+   
+   [[https://emacs-lsp.github.io/lsp-mode/page/installation/][LSP-guide]]
+   Client for Language Server Protocol (v3.14). lsp-mode aims to
+   provide IDE-like experience by providing optional integration with
+   the most popular Emacs packages like company, flycheck and
+   projectile.
+
+   Non-blocking asynchronous calls Real-time Diagnostics/linting via
+   flycheck (recommended) or flymake when Emacs > 26 (requires
+   flymake>=1.0.5) Code completion - company-capf / completion-at-point
+   (note that company-lsp is no longer supported).  Hovers - using lsp-ui
+   Code actions - via lsp-execute-code-action, modeline (recommended) or
+   lsp-ui sideline.  Code outline - using builtin imenu or helm-imenu
+   Code navigation - using builtin xref, lsp-treemacs tree views or
+   lsp-ui peek functions.  Code lens Symbol highlights Formatting Project
+   errors on modeline Debugger - dap-mode Breadcrumb on headerline Helm
+   integration - helm-lsp Ivy integration - lsp-ivy Consult integration -
+   consult-lsp Treemacs integration - lsp-treemacs Semantic tokens as
+   defined by LSP 3.16 (compatible language servers include recent
+   development builds of clangd and rust-analyzer) which-key integration
+   for better discovery iedit dired ido Presentations/demos# System
+   Crafters channel Emacs IDE Videos skybert's emacsconf presentation
+   (Java) thatwist's ScalaUA Conference presentation (Scala) See also#
+   lsp-docker - provide docker image with preconfigured language servers
+   with corresponding emacs configuration.  company-box - company
+   frontend with icons.  dap-mode - Debugger integration for lsp-mode.
+   eglot - An alternative minimal LSP implementation.  which-key - Emacs
+   package that displays available keybindings in popup projectile -
+   Project Interaction Library for Emacs emacs-tree-sitter - Faster,
+   fine-grained code highlighting via tree-sitter.  gccemacs - modified
+   Emacs capable of compiling and running Emacs Lisp as native code.
+
+** package
+   #+BEGIN_SRC emacs-lisp
+     (use-package lsp-mode
+       :ensure t
+       :init
+       (setq lsp-keymap-prefix "C-c l")
+       :hook ((js-mode . lsp-deferred)
+	      (lsp-mode . lsp-enable-which-key-integration))
+       :commands lsp)
+
+     ;; optionally
+     (use-package lsp-ui :commands lsp-ui-mode)
+     ;; if you are helm user
+     (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+     ;; if you are ivy user
+     ;;(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+     ;;se-package lsp-treemacs :commands lsp-treemacs-errors-list)
+   #+END_SRC
+* TESTING
+
